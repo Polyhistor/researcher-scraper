@@ -1,45 +1,12 @@
 import puppeteer from "puppeteer";
-import sqlite3 from "sqlite3";
+import { startupTheService } from "./startupTheService";
 import { cleanUp } from "./cleanup";
+import { insertEmail } from "./insertEmailIntoDB";
 
-// Create a new database (if it doesn't exist) and open it
-let db = new sqlite3.Database(
-  "./emails.db",
-  sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE,
-  (err) => {
-    if (err) {
-      console.error(err.message);
-    }
-    console.log("Connected to the SQLite database.");
-  }
-);
+// Initialise the database
+const db = startupTheService();
 
-// Create a table to store emails (if it doesn't exist)
-db.run(
-  `CREATE TABLE IF NOT EXISTS emails (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  email TEXT NOT NULL
-)`,
-  (err) => {
-    if (err) {
-      console.error(err.message);
-    }
-  }
-);
-
-// Function to insert an email into the database
-function insertEmail(email) {
-  return new Promise((resolve, reject) => {
-    db.run(`INSERT INTO emails (email) VALUES (?)`, [email], function (err) {
-      if (err) {
-        reject(err.message);
-      } else {
-        resolve(this.lastID);
-      }
-    });
-  });
-}
-
+// Pupeeter scripting
 (async () => {
   const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
@@ -70,33 +37,35 @@ function insertEmail(email) {
     console.log(staffUrls);
 
     for (const staffUrl of staffUrls) {
-      await page.goto(staffUrl, { waitUntil: "networkidle0" });
+      const response = await page.goto(staffUrl, { waitUntil: "networkidle0" });
 
-      // Click the button to show the email address
-      await page.click('button[data-qa="emailModalButton"]');
+      if (response?.ok()) {
+        // Click the button to show the email address
+        await page.click('button[data-qa="emailModalButton"]');
 
-      // Selecting the email
-      await page.waitForSelector('div span a[href^="mailto:"');
+        // Selecting the email
+        await page.waitForSelector('div span a[href^="mailto:"');
 
-      // Select the anchor tag
-      const emailAnchor = await page.$('div span a[href^="mailto:"]');
+        // Select the anchor tag
+        const emailAnchor = await page.$('div span a[href^="mailto:"]');
 
-      // Collectin the email
-      let email;
+        // Collectin the email
+        let email;
 
-      if (emailAnchor) {
-        email = await page.evaluate(
-          (element) => element.textContent,
-          emailAnchor
-        );
+        if (emailAnchor) {
+          email = await page.evaluate(
+            (element) => element.textContent,
+            emailAnchor
+          );
+        }
+
+        emails.add(email);
       }
-
-      emails.add(email);
     }
 
     // Insert emails into the database
     for (let email of emails) {
-      insertEmail(email)
+      insertEmail(db, email)
         .then((id) => console.log(`A row has been inserted with rowid ${id}`))
         .catch((error) => console.error(error));
     }

@@ -3,73 +3,111 @@ import { startupTheService } from "./startupTheService";
 import { cleanUp } from "./cleanup";
 import { insertEmail } from "./insertEmailIntoDB";
 
-// Initialise the database
-const db = startupTheService();
-
-// Pupeeter scripting
 (async () => {
-  const browser = await puppeteer.launch({ headless: "new" });
-  const page = await browser.newPage();
-  await page.setUserAgent(
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-  );
+  let browser;
+  try {
+    // Initialise the database
+    const db = startupTheService();
 
-  const academicStaffsPages = [
-    "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mechanical-engineering-department",
-    "https://aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
-    "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/electrical-and-electronic-engineering-department",
-    "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
-    "https://www.aut.ac.nz/study/study-options/art-and-design/academic-staff",
-  ];
-
-  for (const academicStaffsPage of academicStaffsPages) {
-    console.log(academicStaffsPage);
-
-    // Navigate to the main page
-    await page.goto(academicStaffsPage);
-
-    // Extract the URLs of each staff member
-    const staffUrls = await page.$$eval("div #mainContent div p a", (links) =>
-      links.map((link) => link.href)
+    // Start Puppeteer
+    browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
+    await page.setUserAgent(
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
     );
 
-    const emails = new Set();
-    console.log(staffUrls);
+    const academicStaffsPages = [
+      "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mechanical-engineering-department",
+      // "https://aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
+      // "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/electrical-and-electronic-engineering-department",
+      // "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
+      // "https://www.aut.ac.nz/study/study-options/art-and-design/academic-staff",
+    ];
 
-    for (const staffUrl of staffUrls) {
-      const response = await page.goto(staffUrl, { waitUntil: "networkidle0" });
+    for (const academicStaffsPage of academicStaffsPages) {
+      try {
+        await page.goto(academicStaffsPage, {
+          waitUntil: "networkidle0",
+          timeout: 30000,
+        });
 
-      if (response?.ok()) {
-        // Click the button to show the email address
-        await page.click('button[data-qa="emailModalButton"]');
+        const staffUrls = await page.$$eval(
+          "div #mainContent div p a",
+          (links) => links.map((link) => link.href)
+        );
 
-        // Selecting the email
-        await page.waitForSelector('div span a[href^="mailto:"');
+        const emails = new Set();
 
-        // Select the anchor tag
-        const emailAnchor = await page.$('div span a[href^="mailto:"]');
+        console.log(staffUrls);
 
-        // Collectin the email
-        let email;
+        for (const staffUrl of staffUrls) {
+          try {
+            const response = await page.goto(staffUrl, {
+              waitUntil: "networkidle0",
+              timeout: 30000,
+            });
 
-        if (emailAnchor) {
-          email = await page.evaluate(
-            (element) => element.textContent,
-            emailAnchor
-          );
+            console.log(response.status());
+
+            if (response && response.ok()) {
+              const emailButton = await page.$(
+                'button[data-qa="emailModalButton"]'
+              );
+              if (emailButton) {
+                await emailButton.click();
+
+                try {
+                  await page.waitForSelector('div span a[href^="mailto:"]', {
+                    timeout: 10000,
+                  });
+
+                  const emailAnchor = await page.$(
+                    'div span a[href^="mailto:"]'
+                  );
+                  if (emailAnchor) {
+                    const email = await page.evaluate(
+                      (el) => el.textContent,
+                      emailAnchor
+                    );
+                    emails.add(email);
+                  }
+                } catch (e) {
+                  if (e.name === "TimeoutError") {
+                    console.log(`Email not found on page: ${staffUrl}`);
+                  } else {
+                    throw e; // re-throw the error if it is not a TimeoutError
+                  }
+                }
+              }
+            } else {
+              console.log(`Failed to load page: ${staffUrl}`);
+            }
+          } catch (error) {
+            console.error(`Error on page ${staffUrl}: `, error);
+          }
         }
 
-        emails.add(email);
+        for (let email of emails) {
+          try {
+            await insertEmail(db, email);
+          } catch (error) {
+            console.error(`Error inserting email ${email}: `, error);
+          }
+        }
+      } catch (error) {
+        console.error(
+          `Error on academic staff page ${academicStaffsPage}: `,
+          error
+        );
       }
     }
 
-    // Insert emails into the database
-    for (let email of emails) {
-      insertEmail(db, email)
-        .then((id) => console.log(`A row has been inserted with rowid ${id}`))
-        .catch((error) => console.error(error));
+    cleanUp(db, browser);
+  } catch (error) {
+    console.error("Global error:", error);
+  } finally {
+    if (browser) {
+      await browser.close();
     }
   }
-
-  cleanUp(db, browser);
 })();

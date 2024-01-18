@@ -2,15 +2,18 @@ import puppeteer from "puppeteer";
 import { startupTheService } from "./startupTheService";
 import { cleanUp } from "./cleanup";
 import { insertEmail } from "./insertEmailIntoDB";
+import { startPupeeteer } from "./startPupeeteer";
 
 (async () => {
   let browser;
+
   try {
     // Initialise the database
     const db = startupTheService();
 
     // Start Puppeteer
-    browser = await puppeteer.launch({ headless: true });
+    browser = startPupeeteer();
+
     const page = await browser.newPage();
     await page.setUserAgent(
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"

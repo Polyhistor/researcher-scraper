@@ -21,8 +21,6 @@ import { insertEmail } from "./insertEmailIntoDB";
       "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mechanical-engineering-department",
       "https://aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
       "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/electrical-and-electronic-engineering-department",
-      "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
-      "https://www.aut.ac.nz/study/study-options/art-and-design/academic-staff",
     ];
 
     for (const academicStaffsPage of academicStaffsPages) {
@@ -65,11 +63,13 @@ import { insertEmail } from "./insertEmailIntoDB";
                   const emailAnchor = await page.$(
                     'div span a[href^="mailto:"]'
                   );
+
                   if (emailAnchor) {
                     const email = await page.evaluate(
                       (el) => el.textContent,
                       emailAnchor
                     );
+
                     emails.add(email);
                   }
                 } catch (e) {

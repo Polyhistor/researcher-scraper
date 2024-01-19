@@ -5,5 +5,5 @@ export const startPupeeteer = async () => {
 
   browser = await puppeteer.launch({ headless: "new" });
 
-  return { browser };
+  return browser;
 };

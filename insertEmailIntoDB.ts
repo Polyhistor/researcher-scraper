@@ -1,11 +1,25 @@
-// Function to insert an email into the database
 export const insertEmail = (db, email) => {
   return new Promise((resolve, reject) => {
-    db.run(`INSERT INTO emails (email) VALUES (?)`, [email], function (err) {
+    // First, check if the email already exists
+    db.get(`SELECT email FROM emails WHERE email = ?`, [email], (err, row) => {
       if (err) {
         reject(err.message);
+      } else if (row) {
+        // Email already exists, so resolve with a message or an identifier
+        resolve("Email already exists");
       } else {
-        resolve(this.lastID);
+        // Email does not exist, insert it
+        db.run(
+          `INSERT INTO emails (email) VALUES (?)`,
+          [email],
+          function (err) {
+            if (err) {
+              reject(err.message);
+            } else {
+              resolve(this.lastID); // Resolve with the new row's ID
+            }
+          }
+        );
       }
     });
   });

@@ -19,10 +19,10 @@ import { insertEmail } from "./insertEmailIntoDB";
 
     const academicStaffsPages = [
       "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mechanical-engineering-department",
-      // "https://aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
-      // "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/electrical-and-electronic-engineering-department",
-      // "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
-      // "https://www.aut.ac.nz/study/study-options/art-and-design/academic-staff",
+      "https://aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
+      "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/electrical-and-electronic-engineering-department",
+      "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
+      "https://www.aut.ac.nz/study/study-options/art-and-design/academic-staff",
     ];
 
     for (const academicStaffsPage of academicStaffsPages) {

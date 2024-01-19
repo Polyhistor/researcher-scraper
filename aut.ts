@@ -23,10 +23,6 @@ import { insertEmail } from "./insertEmailIntoDB";
       "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/electrical-and-electronic-engineering-department",
       "https://www.aut.ac.nz/study/study-options/engineering-computer-and-mathematical-sciences/academic-staff/mathematical-sciences-department",
       "https://www.aut.ac.nz/study/study-options/art-and-design/academic-staff",
-      "https://www.auckland.ac.nz/en/creative/about-the-faculty/architecture-planning/about/academic-staff.html",
-      "https://www.auckland.ac.nz/en/creative/about-the-faculty/dance-studies/about-dance-studies/dance-studies-academic-staff.html",
-      "https://www.auckland.ac.nz/en/creative/about-the-faculty/elam/about-elam/fine-arts-academic-staff.html",
-      "https://www.auckland.ac.nz/en/creative/about-the-faculty/school-of-music/welcome-school-music/academic-staff.html",
     ];
 
     for (const academicStaffsPage of academicStaffsPages) {

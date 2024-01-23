@@ -7,7 +7,7 @@ Greetings from Auckland University of Technology! I'm Pouya Ataei, a PhD student
 
 Could you spare just 5 minutes to complete a short, anonymous survey? Your insights will help shape our understanding of these tools in enhancing academic teamwork and efficiency. 
 
-Survey Link: https://forms.office.com/Pages/DesignPageV2.aspx?prevorigin=OfficeDotCom&origin=NeoPortalPage&subpage=design&id=oSwCXgRch0-Nt9WIcmJ04-gZ6K4RyipPsvyK2tEJCltUQjBIUFVJUTc4TzNESE5ZSFYxVkNVR0VDUC4u
+Survey Link: https://forms.office.com/r/Z7HfQHkwwe
 
 Your contribution is deeply appreciated, and I'm here to answer any questions you might have. Thank you for adding your valuable perspective to our research!
 
@@ -31,7 +31,7 @@ async function sendEmail() {
 
   let mailOptions = {
     from: '"Pouya Ataei" <pouya.ataei.10@gmail.com>',
-    to: "sri.regula@autuni.ac.nz",
+    to: "daniel.staegemann@ovgu.de",
     subject: "Your Insight Needed: Quick Survey on Collaboration in Research",
     text: emailContent,
   };

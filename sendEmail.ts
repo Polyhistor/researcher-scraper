@@ -1,5 +1,57 @@
+import sqlite3 from "sqlite3";
 import nodemailer from "nodemailer";
 
+// Initialize database
+function setupDatabase() {
+  return new Promise((resolve, reject) => {
+    const db = new sqlite3.Database("emails.db", (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        db.exec(
+          "CREATE TABLE IF NOT EXISTS emails (email TEXT PRIMARY KEY, EmailSent BOOLEAN DEFAULT false)",
+          (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(db);
+            }
+          }
+        );
+      }
+    });
+  });
+}
+
+const getEmailsToSend = (db) => {
+  return new Promise((resolve, reject) => {
+    db.all("SELECT email FROM emails WHERE EmailSent = false", (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};
+
+const updateEmailSent = (db, email) => {
+  return new Promise((resolve, reject) => {
+    db.run(
+      "UPDATE emails SET EmailSent = true WHERE email = ?",
+      [email],
+      (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve();
+        }
+      }
+    );
+  });
+};
+
+// Email content
 const emailContent = `
 Dear Sir/Madam,
 
@@ -17,7 +69,11 @@ Pouya Ataei
 PhD Student, AUT
 `;
 
-async function sendEmail() {
+// Add a delay function
+const delay = (time) => new Promise((resolve) => setTimeout(resolve, time));
+
+// Email sending function
+async function sendEmails(db) {
   const transporter = nodemailer.createTransport({
     service: "Gmail",
     host: "smtp.gmail.com",
@@ -29,19 +85,47 @@ async function sendEmail() {
     },
   });
 
-  let mailOptions = {
-    from: '"Pouya Ataei" <pouya.ataei.10@gmail.com>',
-    to: "daniel.staegemann@ovgu.de",
-    subject: "Your Insight Needed: Quick Survey on Collaboration in Research",
-    text: emailContent,
-  };
+  const BATCH_SIZE = 50;
+  const DELAY_TIME = 300000; // 5 minutes in milliseconds
 
-  try {
-    let info = await transporter.sendMail(mailOptions);
-    console.log("Message sent: %s", info.messageId);
-  } catch (error) {
-    console.error("Error sending email:", error);
+  let emailsToSend = await getEmailsToSend(db);
+
+  for (let i = 0; i < emailsToSend.length; i += BATCH_SIZE) {
+    let batch = emailsToSend.slice(i, i + BATCH_SIZE);
+
+    for (let row of batch) {
+      let mailOptions = {
+        from: '"Pouya Ataei" <pouya.ataei.10@gmail.com>',
+        to: row.email,
+        subject:
+          "Your Insight Needed: Quick Survey on Collaboration in Research",
+        text: emailContent,
+      };
+
+      try {
+        let info = await transporter.sendMail(mailOptions);
+        console.log("Message sent: %s", info.messageId);
+        await updateEmailSent(db, row.email);
+      } catch (error) {
+        console.error("Error sending email to %s: %s", row.email, error);
+      }
+    }
+
+    if (i + BATCH_SIZE < emailsToSend.length) {
+      console.log(
+        `Waiting for ${
+          DELAY_TIME / 60000
+        } minutes before sending the next batch...`
+      );
+      await delay(DELAY_TIME);
+    }
   }
 }
 
-sendEmail();
+// Main function
+async function main() {
+  const db = await setupDatabase();
+  await sendEmails(db);
+}
+
+main();

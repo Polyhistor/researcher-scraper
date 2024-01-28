@@ -25,7 +25,9 @@ function setupDatabase() {
 
 const getEmailsToSend = (db) => {
   return new Promise((resolve, reject) => {
-    db.all("SELECT email FROM emails WHERE EmailSent = false", (err, rows) => {
+    db.all("SELECT email FROM emails WHERE emailSent = 0", (err, rows) => {
+      // console.log(rows);
+
       if (err) {
         reject(err);
       } else {
@@ -38,7 +40,7 @@ const getEmailsToSend = (db) => {
 const updateEmailSent = (db, email) => {
   return new Promise((resolve, reject) => {
     db.run(
-      "UPDATE emails SET EmailSent = true WHERE email = ?",
+      "UPDATE emails SET emailSent = true WHERE email = ?",
       [email],
       (err) => {
         if (err) {
@@ -89,6 +91,8 @@ async function sendEmails(db) {
   const DELAY_TIME = 300000; // 5 minutes in milliseconds
 
   let emailsToSend = await getEmailsToSend(db);
+
+  console.log(emailsToSend);
 
   for (let i = 0; i < emailsToSend.length; i += BATCH_SIZE) {
     let batch = emailsToSend.slice(i, i + BATCH_SIZE);

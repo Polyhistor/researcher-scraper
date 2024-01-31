@@ -8,9 +8,9 @@ export const insertEmail = (db, email) => {
         // Email already exists, so resolve with a message or an identifier
         resolve("Email already exists");
       } else {
-        // Email does not exist, insert it
+        // Email does not exist, insert it with emailSent set to 0
         db.run(
-          `INSERT INTO emails (email) VALUES (?)`,
+          `INSERT INTO emails (email, emailSent) VALUES (?, 0)`,
           [email],
           function (err) {
             if (err) {

@@ -5,11 +5,10 @@ import { insertEmail } from "./insertEmailIntoDB";
 
 (async () => {
   let browser;
+  // Initialise the database
+  const db = startupTheService();
 
   try {
-    // Initialise the database
-    const db = startupTheService();
-
     // Start Puppeteer
     browser = await puppeteer.launch({ headless: true });
     const page = await browser.newPage();
@@ -21,6 +20,8 @@ import { insertEmail } from "./insertEmailIntoDB";
     const academicStaffPages = [
       "https://sgeas.unimelb.edu.au/about/people/academic-staff",
       "https://cis.unimelb.edu.au/people#academic",
+      "https://infrastructure.eng.unimelb.edu.au/people#academic",
+      "https://electrical.eng.unimelb.edu.au/people",
     ];
 
     for (const academicStaffPage of academicStaffPages) {
@@ -66,6 +67,6 @@ import { insertEmail } from "./insertEmailIntoDB";
     }
 
     // Clean up the database connection
-    cleanUp(db);
+    cleanUp(db, browser);
   }
 })();

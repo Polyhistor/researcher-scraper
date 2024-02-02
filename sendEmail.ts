@@ -65,6 +65,8 @@ Survey Link: https://forms.office.com/r/Z7HfQHkwwe
 
 Your contribution is deeply appreciated, and I'm here to answer any questions you might have. Thank you for adding your valuable perspective to our research!
 
+This is not a spam email, I am using Gmail because it give me much more feature than Outlook and also my university does not allow custom usage of the SMTP server, and that's why I am not using my university's email.
+
 Warm regards,
 
 Pouya Ataei

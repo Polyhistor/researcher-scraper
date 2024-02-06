@@ -85,7 +85,7 @@ async function sendEmails(db) {
     secure: true,
     auth: {
       user: "pouya.ataei.10@gmail.com",
-      pass: process.env.emailPass,
+      pass: process.env.emailPass3,
     },
   });
 
